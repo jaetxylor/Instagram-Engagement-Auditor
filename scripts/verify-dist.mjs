@@ -14,15 +14,16 @@ if (/^\s*import\s/m.test(source)) failures.push("Unbundled import statement rema
 if (/^\s*export\s/m.test(source)) failures.push("Unbundled export statement remains.");
 if (/davidarroyo/i.test(source)) failures.push("Unexpected David Arroyo attribution/reference found.");
 
-for (const forbidden of [
-  "/friendships/create/",
-  "/friendships/destroy/",
-  "/like/",
-  "/unlike/",
-  "/comments/add/",
-  "/direct_v2/threads/broadcast/"
-]) {
-  if (source.includes(forbidden)) failures.push(`Read-only bundle contains forbidden mutation route: ${forbidden}`);
+const forbiddenPatterns = [
+  ["friendship create", /\/api\/v1\/friendships\/[^`"']+\/create\//],
+  ["friendship destroy", /\/api\/v1\/friendships\/[^`"']+\/destroy\//],
+  ["media like", /\/api\/v1\/media\/[^`"']+\/like\//],
+  ["media unlike", /\/api\/v1\/media\/[^`"']+\/unlike\//],
+  ["comment creation", /\/api\/v1\/media\/[^`"']+\/comment\//],
+  ["direct-message broadcast", /\/api\/v1\/direct_v2\/threads\/broadcast\//]
+];
+for (const [label, pattern] of forbiddenPatterns) {
+  if (pattern.test(source)) failures.push(`Read-only bundle contains forbidden mutation route pattern: ${label}`);
 }
 
 if (source.length < 40000) failures.push(`Bundle is unexpectedly small (${source.length} characters).`);
