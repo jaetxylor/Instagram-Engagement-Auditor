@@ -1,5 +1,11 @@
 # Instagram Engagement Auditor
 
+<p align="center">
+  <a href="https://jaetxylor.github.io/Instagram-Engagement-Auditor/"><strong>▶ Launch / Copy the Auditor</strong></a>
+</p>
+
+> **Live copy page:** https://jaetxylor.github.io/Instagram-Engagement-Auditor/
+
 A read-only browser-based Instagram audit tool for analyzing follower relationships, post engagement, inactivity confidence, engagement-rate estimates, and follower/following ratios.
 
 Created by [@jaetxylor](https://github.com/jaetxylor).
@@ -23,9 +29,7 @@ Created by [@jaetxylor](https://github.com/jaetxylor).
 
 ### Option A — Copy from the project page
 
-If GitHub Pages is enabled for this repository:
-
-1. Open the project page.
+1. Open the **[live copy page](https://jaetxylor.github.io/Instagram-Engagement-Auditor/)**.
 2. Click **Copy auditor code**.
 3. Open [Instagram](https://www.instagram.com/) on desktop and log in.
 4. Open Developer Tools.
@@ -162,9 +166,13 @@ This project is independent and is not affiliated with, endorsed by, sponsored b
 
 ## GitHub Pages / copy button
 
-This repository includes an `index.html` landing page with a **Copy auditor code** button.
+The live copy page is:
 
-To publish it with GitHub Pages:
+**https://jaetxylor.github.io/Instagram-Engagement-Auditor/**
+
+This repository includes an `index.html` landing page with a **Copy auditor code** button and a visible copyable source-code box.
+
+If GitHub Pages still needs to be enabled:
 
 1. Open the repository's **Settings**.
 2. Open **Pages**.
