@@ -1,6 +1,8 @@
 import { calculateFollowRatio } from "../core/engagement.mjs";
 import { patchAuditRun } from "../core/audit-schema.mjs";
 
+const COMPLETION_HANDLERS = new WeakMap();
+
 function idOf(account) {
   return String(account?.id ?? account?.pk ?? account?.userId ?? "");
 }
@@ -26,6 +28,31 @@ function normalizeCacheRecord(record) {
     fetchedAt: record?.fetchedAt ?? null,
     source: record?.source ?? "cache"
   };
+}
+
+export function registerProfileEnrichmentCompletionHandler(connector, handler) {
+  if (!connector || (typeof connector !== "object" && typeof connector !== "function")) {
+    throw new TypeError("A connector object is required to register profile enrichment persistence.");
+  }
+  if (handler != null && typeof handler !== "function") {
+    throw new TypeError("Profile enrichment completion handler must be a function.");
+  }
+
+  if (handler == null) {
+    COMPLETION_HANDLERS.delete(connector);
+    return () => {};
+  }
+
+  COMPLETION_HANDLERS.set(connector, handler);
+  return () => {
+    if (COMPLETION_HANDLERS.get(connector) === handler) COMPLETION_HANDLERS.delete(connector);
+  };
+}
+
+async function notifyProfileEnrichmentComplete(connector, result) {
+  const handler = COMPLETION_HANDLERS.get(connector);
+  if (typeof handler !== "function") return null;
+  return handler(result);
 }
 
 export function decorateProfileCounts(account, counts, { source = "unknown", fetchedAt = null } = {}) {
@@ -135,7 +162,7 @@ export async function enrichProfileCounts({
     onProgress?.({ completed, total, failed, cached, embedded, accountId: id, username });
   }
 
-  return {
+  const result = {
     results,
     summary: {
       total,
@@ -148,4 +175,7 @@ export async function enrichProfileCounts({
     },
     errors
   };
+
+  await notifyProfileEnrichmentComplete(connector, result);
+  return result;
 }
