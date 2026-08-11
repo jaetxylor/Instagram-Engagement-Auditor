@@ -27,16 +27,31 @@ Created by [@jaetxylor](https://github.com/jaetxylor).
 
 ## Quick start
 
+### Open Developer Tools
+
+Use **Chrome or Edge on desktop** for the easiest Snippets workflow.
+
+| System | Open Developer Tools | Open Console directly |
+|---|---|---|
+| **Windows** | `Ctrl + Shift + I` or `F12` | `Ctrl + Shift + J` |
+| **macOS / Mac** | `⌘ Command + ⌥ Option + I` | `⌘ Command + ⌥ Option + J` |
+
+After Developer Tools opens, select **Sources → Snippets**. If the left sidebar is hidden, click the `>>` overflow menu in DevTools and choose **Sources**.
+
+> **Safari users:** the instructions are different and Safari does not provide the same Chrome/Edge Snippets workflow. For this tool, Chrome or Edge on macOS is recommended.
+
 ### Option A — Copy from the project page
 
 1. Open the **[live copy page](https://jaetxylor.github.io/Instagram-Engagement-Auditor/)**.
 2. Click **Copy auditor code**.
 3. Open [Instagram](https://www.instagram.com/) on desktop and log in.
-4. Open Developer Tools.
+4. Open Developer Tools using the shortcut above:
+   - **Windows:** `Ctrl + Shift + I` or `F12`
+   - **Mac:** `⌘ Command + ⌥ Option + I`
 5. Go to **Sources → Snippets**.
-6. Create a new snippet.
+6. Click **+ New snippet**.
 7. Paste the copied code into the snippet.
-8. Run the snippet.
+8. Run the snippet with the **▶ Run** button or `Ctrl + Enter` / `⌘ Command + Enter`.
 9. The Engagement Auditor interface will open over Instagram.
 
 Using a DevTools Snippet is recommended over repeatedly pasting code directly into the Console.
@@ -46,9 +61,12 @@ Using a DevTools Snippet is recommended over repeatedly pasting code directly in
 1. Open [`instagram-engagement-auditor.js`](./instagram-engagement-auditor.js).
 2. Copy the entire file.
 3. Open Instagram in your desktop browser and log in.
-4. Open **Developer Tools → Sources → Snippets**.
-5. Create a new snippet and paste the code.
-6. Run the snippet.
+4. Open Developer Tools:
+   - **Windows:** `Ctrl + Shift + I` or `F12`
+   - **Mac:** `⌘ Command + ⌥ Option + I`
+5. Open **Sources → Snippets**.
+6. Create a new snippet and paste the code.
+7. Run the snippet.
 
 ## Core audit workflow
 
