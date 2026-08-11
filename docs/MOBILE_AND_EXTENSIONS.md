@@ -28,6 +28,20 @@ Do not make the commercial Android strategy depend on Chrome extensions. The lon
 
 No Developer Tools, snippet, console paste, or copied JavaScript is required.
 
+## Mobile ergonomics
+
+The extension adds mobile-only presentation overrides after launching the shared V4 UI:
+
+- iPhone/iPad safe-area inset support
+- minimum 44 px touch targets
+- 16 px form controls to avoid unwanted iOS input zoom
+- coarse-pointer/tap behavior
+- touch-friendly expandable rows
+- safe-area-aware toast positioning
+- momentum scrolling and contained overscroll
+
+These adjustments live in the extension delivery layer rather than forking the V4 analytics/product logic.
+
 ## Permission model
 
 The extension deliberately requests a narrow permission set:
@@ -90,7 +104,13 @@ On a Mac with a current Xcode toolchain:
 
 ```bash
 npm run validate
-xcrun safari-web-extension-packager --ios-only --swift dist/web-extension
+xcrun safari-web-extension-packager \
+  --ios-only \
+  --swift \
+  --copy-resources \
+  --no-open \
+  --no-prompt \
+  dist/web-extension
 ```
 
 The packager can also be given `--project-location`, `--app-name`, and `--bundle-identifier` when those release values are finalized.
