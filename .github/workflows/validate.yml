@@ -26,26 +26,23 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
 
           p = Path('instagram-engagement-auditor.js')
           s = p.read_text(encoding='utf-8')
 
-          s = s.replace('hypeStyleER', 'profileEngagementRate')
-          s = s.replace('#iga-metric-hype', '#iga-metric-profile-er')
-          s = s.replace('id="iga-metric-hype"', 'id="iga-metric-profile-er"')
-          s = s.replace('<span>HypeAuditor-style ER</span>', '<span>Profile engagement rate</span>')
-          s = s.replace(
-              'HypeAuditor-style estimate: (likes+comments)/followers*100 on 12 recent posts, median after transparent 1.5xIQR outlier filtering; not HypeAuditor proprietary scoring.',
-              'Profile engagement-rate estimate: (likes+comments)/followers*100 on up to 12 recent posts, using the median after transparent 1.5xIQR outlier filtering.'
-          )
-          s = s.replace(
-              '<div class="method"><strong>HypeAuditor-style estimate:</strong> ER per post = (likes + comments) ÷ followers × 100. V3 uses up to the 12 most recent usable posts, removes standard 1.5×IQR statistical outliers, then reports the median. HypeAuditor publicly describes a 12-post median with outlier exclusion but does not publish its exact proprietary outlier algorithm, so this is an estimate, not a HypeAuditor score. <span id="iga-er-note"></span></div>',
-              '<div class="method"><strong>Engagement-rate estimate:</strong> ER per post = (likes + comments) ÷ followers × 100. V3 uses up to the 12 most recent usable posts, removes statistical outliers with the standard 1.5×IQR rule, then reports the median. <span id="iga-er-note"></span></div>'
-          )
+          replacements = {
+              'hype: median(f.kept),': 'profileER: median(f.kept),',
+              '$("#hype").textContent=Number.isFinite(m?.hype)?pct(m.hype,2):"—";': '$("#profileER").textContent=Number.isFinite(m?.profileER)?pct(m.profileER,2):"—";',
+              '<span>HypeAuditor-style ER</span><strong id="hype">—</strong>': '<span>Profile engagement rate</span><strong id="profileER">—</strong>',
+              'ER per post = (likes + comments) ÷ followers × 100. Uses up to 12 recent usable posts, transparent 1.5×IQR outlier removal, then the median. This is an independent HypeAuditor-style estimate, not an official HypeAuditor score.': 'ER per post = (likes + comments) ÷ followers × 100. Uses up to 12 recent usable posts, transparent 1.5×IQR outlier removal, then reports the median.',
+              'HypeAuditor-style estimate: per-post (likes+comments)/followers*100; up to 12 recent posts; transparent 1.5xIQR outlier filter; median of remaining values.': 'Profile engagement-rate estimate: per-post (likes+comments)/followers*100; up to 12 recent posts; transparent 1.5xIQR outlier filter; median of remaining values.'
+          }
 
-          if 'hypeauditor' in s.lower():
-              raise SystemExit('Third-party engagement-rate brand reference still exists in auditor source')
+          for old, new in replacements.items():
+              s = s.replace(old, new)
+
+          if 'hypeauditor' in s.lower() or '#hype' in s or 'm?.hype' in s or 'hype:' in s:
+              raise SystemExit('Legacy engagement-rate branding/identifier still exists in auditor source')
 
           p.write_text(s, encoding='utf-8')
           PY
