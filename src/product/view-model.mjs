@@ -12,6 +12,19 @@ function round(value, digits = 2) {
   return Math.round(value * factor) / factor;
 }
 
+function finiteOrNull(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : null;
+}
+
+function profileFields(user = {}) {
+  return {
+    profilePicture: user?.profilePicture ?? user?.profile_pic_url ?? user?.pic ?? "",
+    followerCount: finiteOrNull(user?.followerCount ?? user?.profileFollowers ?? user?.followers),
+    followingCount: finiteOrNull(user?.followingCount ?? user?.profileFollowing ?? user?.following)
+  };
+}
+
 export function buildAuditOverview(run) {
   const followers = safeArray(run?.relationships?.followers);
   const following = safeArray(run?.relationships?.following);
@@ -110,18 +123,29 @@ function classificationTone(key) {
   return "neutral";
 }
 
+function baseRow(user = {}) {
+  return {
+    id: idOf(user) || null,
+    username: user?.username ?? "",
+    fullName: user?.fullName ?? user?.full_name ?? "",
+    ...profileFields(user)
+  };
+}
+
 export function buildAccountRows(run) {
   const followers = safeArray(run?.relationships?.followers);
   const following = safeArray(run?.relationships?.following);
-  const followerIds = new Set(followers.map(idOf).filter(Boolean));
-  const followingIds = new Set(following.map(idOf).filter(Boolean));
+  const followersById = new Map(followers.map(user => [idOf(user), user]).filter(([id]) => id));
+  const followingById = new Map(following.map(user => [idOf(user), user]).filter(([id]) => id));
+  const followerIds = new Set(followersById.keys());
+  const followingIds = new Set(followingById.keys());
   const rows = [];
 
   for (const classification of safeArray(run?.classifications)) {
+    const id = String(classification?.account?.id ?? "");
+    const sourceUser = followersById.get(id) ?? classification?.account ?? {};
     rows.push({
-      id: classification?.account?.id ?? null,
-      username: classification?.account?.username ?? "",
-      fullName: classification?.account?.fullName ?? "",
+      ...baseRow({ ...sourceUser, ...classification?.account }),
       relationship: classification?.relationship ?? {
         followsYou: true,
         youFollow: false,
@@ -140,9 +164,7 @@ export function buildAccountRows(run) {
     const id = idOf(user);
     if (!id || followerIds.has(id)) continue;
     rows.push({
-      id,
-      username: user?.username ?? "",
-      fullName: user?.fullName ?? user?.full_name ?? "",
+      ...baseRow(user),
       relationship: {
         followsYou: false,
         youFollow: true,
@@ -162,9 +184,7 @@ export function buildAccountRows(run) {
     const id = idOf(user);
     if (!id || classifiedIds.has(id) || followingIds.has(id)) continue;
     rows.push({
-      id,
-      username: user?.username ?? "",
-      fullName: user?.fullName ?? user?.full_name ?? "",
+      ...baseRow(user),
       relationship: {
         followsYou: true,
         youFollow: false,
@@ -189,9 +209,7 @@ export function buildAccountRows(run) {
     if (!id || knownIds.has(id)) continue;
     if (!otherEngagers.has(id)) {
       otherEngagers.set(id, {
-        id,
-        username: observation?.username ?? "",
-        fullName: "",
+        ...baseRow({ id, username: observation?.username ?? "" }),
         relationship: {
           followsYou: false,
           youFollow: false,
