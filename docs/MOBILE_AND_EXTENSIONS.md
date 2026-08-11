@@ -98,7 +98,18 @@ dist/web-extension/
 
 ## Safari / iOS packaging
 
-Apple's current Safari Web Extension Packager can convert the generated `dist/web-extension/` folder into an Xcode project containing an iOS app and Safari extension.
+Apple's Safari Web Extension Packager can convert the generated `dist/web-extension/` folder into an Xcode project containing an iOS app and Safari extension.
+
+CI performs this conversion on a macOS runner using the generated extension resources, then compiles the resulting app and extension for the iOS Simulator without signing.
+
+The packager currently applies the requested bundle identifier to the extension while deriving a different containing-app identifier from the app name. Because an embedded iOS extension must use a child identifier of its containing app, `scripts/fix-safari-project.mjs` normalizes the generated project to:
+
+```text
+Containing app: com.jaetxylor.engagementauditor.dev
+Safari extension: com.jaetxylor.engagementauditor.dev.Extension
+```
+
+The normalization is fail-closed and covered by tests so a future Apple project-format change cannot silently rewrite unrelated identifiers.
 
 On a Mac with a current Xcode toolchain:
 
@@ -110,14 +121,32 @@ xcrun safari-web-extension-packager \
   --copy-resources \
   --no-open \
   --no-prompt \
-  dist/web-extension
+  --force \
+  --app-name "Engagement Auditor" \
+  --bundle-identifier "com.jaetxylor.engagementauditor.dev" \
+  --project-location "$PWD/build/safari" \
+  "$PWD/dist/web-extension"
+
+PBXPROJ="$(find build/safari -name project.pbxproj -print -quit)"
+node scripts/fix-safari-project.mjs "$PBXPROJ" com.jaetxylor.engagementauditor.dev
 ```
 
-The packager can also be given `--project-location`, `--app-name`, and `--bundle-identifier` when those release values are finalized.
+### CI packaging status
+
+The automated Safari packaging gate currently verifies that:
+
+- the V4 WebExtension build and safety checks pass
+- Apple's Safari packager accepts the extension
+- a valid Xcode project is generated
+- the app embeds a single Safari extension product
+- app/extension bundle identifiers have the required parent-child relationship
+- the generated app and extension compile successfully for a generic iOS Simulator destination with signing disabled
+
+The remaining Safari packager warnings are branding-only: the extension manifest does not yet provide final icon assets or a large icon. Those should be resolved when the production Engagement Auditor icon is finalized rather than with a disposable placeholder.
 
 Do not commit generated signing credentials, provisioning profiles, developer certificates, or private App Store configuration to this repository.
 
-Apple also provides a web-based Safari Web Extension Packager through App Store Connect, which can later be used for TestFlight/App Store packaging without making the generated Xcode project the source of truth.
+The generated Xcode project remains a CI/release artifact; the WebExtension source is the source of truth.
 
 ## Architecture boundary
 
