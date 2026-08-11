@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Commercial-foundation development workspace for the Instagram Engagement Auditor.",
   "scripts": {
-    "check": "node --check instagram-engagement-auditor.js && node --check src/core/statistics.mjs && node --check src/core/coverage.mjs && node --check src/core/engagement.mjs && node --check src/core/audit-schema.mjs && node --check src/core/audit-engine.mjs && node --check src/core/index.mjs && node --check src/connectors/contract.mjs && node --check src/storage/checkpoint-store.mjs",
+    "check": "node --check instagram-engagement-auditor.js && node --check src/core/statistics.mjs && node --check src/core/coverage.mjs && node --check src/core/engagement.mjs && node --check src/core/audit-schema.mjs && node --check src/core/audit-engine.mjs && node --check src/core/index.mjs && node --check src/connectors/contract.mjs && node --check src/connectors/instagram-browser.mjs && node --check src/runtime/request-client.mjs && node --check src/storage/checkpoint-store.mjs",
     "test": "node --test test/*.test.mjs",
     "validate": "npm run check && npm test"
   },
