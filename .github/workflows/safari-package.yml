@@ -64,6 +64,17 @@ jobs:
           echo "Generated project: $PROJECT"
           xcodebuild -project "$PROJECT" -list
 
+      - name: Inspect generated extension embedding
+        run: |
+          PBXPROJ="$(find build/safari -name project.pbxproj -print -quit)"
+          if [ -z "$PBXPROJ" ]; then
+            echo "Generated project.pbxproj was not found." >&2
+            exit 1
+          fi
+          echo "PBX project: $PBXPROJ"
+          echo "--- Safari extension product/embed references ---"
+          grep -n -C 5 -E 'PBXCopyFilesBuildPhase|Engagement Auditor Extension\.appex|dstSubfolderSpec = 13|PlugIns' "$PBXPROJ" || true
+
       - name: Compile unsigned iOS Simulator build
         run: |
           set -o pipefail
@@ -78,6 +89,7 @@ jobs:
             build 2>&1 | tee build/ios-simulator-build.log
 
       - name: Upload unsigned Safari packaging artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: engagement-auditor-safari-ios-unsigned-pr
@@ -85,5 +97,5 @@ jobs:
             build/safari/
             build/safari-packager.log
             build/ios-simulator-build.log
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
