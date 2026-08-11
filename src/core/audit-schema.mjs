@@ -57,6 +57,7 @@ export function createAuditRun({
     progress: {
       phase: "followers",
       completedItems: 0,
+      completedItemIds: [],
       totalItems: null,
       percent: 0,
       message: "Ready"
@@ -97,6 +98,7 @@ export function validateAuditRun(run) {
   if (!AUDIT_STATUSES.includes(run.status)) errors.push(`Invalid audit status: ${run.status}.`);
   if (!run.source || typeof run.source !== "object" || !run.source.type) errors.push("Audit source.type is required.");
   if (!run.progress || !AUDIT_PHASES.includes(run.progress.phase)) errors.push(`Invalid audit phase: ${run?.progress?.phase}.`);
+  if (!Array.isArray(run?.progress?.completedItemIds)) errors.push("progress.completedItemIds must be an array.");
   if (!Array.isArray(run?.relationships?.followers)) errors.push("relationships.followers must be an array.");
   if (!Array.isArray(run?.relationships?.following)) errors.push("relationships.following must be an array.");
   if (!Array.isArray(run.posts)) errors.push("posts must be an array.");
@@ -125,6 +127,7 @@ export function patchAuditRun(run, patch = {}) {
 export function updateAuditProgress(run, {
   phase = run?.progress?.phase ?? "followers",
   completedItems = run?.progress?.completedItems ?? 0,
+  completedItemIds = run?.progress?.completedItemIds ?? [],
   totalItems = run?.progress?.totalItems ?? null,
   percent = run?.progress?.percent ?? 0,
   message = run?.progress?.message ?? ""
@@ -136,6 +139,7 @@ export function updateAuditProgress(run, {
     progress: {
       phase,
       completedItems: Math.max(0, Number(completedItems) || 0),
+      completedItemIds: [...new Set(Array.from(completedItemIds ?? []).map(String))],
       totalItems: Number.isFinite(Number(totalItems)) ? Math.max(0, Number(totalItems)) : null,
       percent: Math.min(100, Math.max(0, Number(percent) || 0)),
       message: String(message ?? "")
