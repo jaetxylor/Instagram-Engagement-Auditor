@@ -25,10 +25,13 @@ function profileConnector() {
     id: "profile-count-test",
     version: "1",
     sourceType: "browser",
-    capabilities: ["account", "profile_counts"],
+    capabilities: ["account", "posts", "profile_counts"],
     methods: {
       async getAccountContext() {
         return { id: "acct", username: "owner" };
+      },
+      async listPosts() {
+        return [];
       },
       async getProfileCounts({ id }) {
         if (String(id) === "remote") return { followers: 120, following: 240 };
