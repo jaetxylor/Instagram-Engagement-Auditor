@@ -25,7 +25,7 @@ test("profile metrics use recent posts and return transparent supporting values"
   assert.equal(metrics.usablePosts, 5);
   assert.equal(metrics.recentPosts, 5);
   assert.equal(metrics.profileEngagementRate, 6);
-  assert.equal(metrics.allPostsAverageEngagementRate, 6.6);
+  assert.ok(Math.abs(metrics.allPostsAverageEngagementRate - 6.6) < 1e-12);
   assert.equal(metrics.averageLikesRecent, 56);
   assert.equal(metrics.averageCommentsRecent, 10);
 });
