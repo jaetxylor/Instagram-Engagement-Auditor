@@ -6,7 +6,7 @@ on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   syntax:
@@ -20,5 +20,48 @@ jobs:
         with:
           node-version: 22
 
+      - name: Normalize profile engagement-rate wording
+        if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('instagram-engagement-auditor.js')
+          s = p.read_text(encoding='utf-8')
+
+          s = s.replace('hypeStyleER', 'profileEngagementRate')
+          s = s.replace('#iga-metric-hype', '#iga-metric-profile-er')
+          s = s.replace('id="iga-metric-hype"', 'id="iga-metric-profile-er"')
+          s = s.replace('<span>HypeAuditor-style ER</span>', '<span>Profile engagement rate</span>')
+          s = s.replace(
+              'HypeAuditor-style estimate: (likes+comments)/followers*100 on 12 recent posts, median after transparent 1.5xIQR outlier filtering; not HypeAuditor proprietary scoring.',
+              'Profile engagement-rate estimate: (likes+comments)/followers*100 on up to 12 recent posts, using the median after transparent 1.5xIQR outlier filtering.'
+          )
+          s = s.replace(
+              '<div class="method"><strong>HypeAuditor-style estimate:</strong> ER per post = (likes + comments) ÷ followers × 100. V3 uses up to the 12 most recent usable posts, removes standard 1.5×IQR statistical outliers, then reports the median. HypeAuditor publicly describes a 12-post median with outlier exclusion but does not publish its exact proprietary outlier algorithm, so this is an estimate, not a HypeAuditor score. <span id="iga-er-note"></span></div>',
+              '<div class="method"><strong>Engagement-rate estimate:</strong> ER per post = (likes + comments) ÷ followers × 100. V3 uses up to the 12 most recent usable posts, removes statistical outliers with the standard 1.5×IQR rule, then reports the median. <span id="iga-er-note"></span></div>'
+          )
+
+          if 'hypeauditor' in s.lower():
+              raise SystemExit('Third-party engagement-rate brand reference still exists in auditor source')
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
       - name: Check JavaScript syntax
         run: node --check instagram-engagement-auditor.js
+
+      - name: Commit normalized auditor source
+        if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
+        shell: bash
+        run: |
+          if git diff --quiet -- instagram-engagement-auditor.js; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add instagram-engagement-auditor.js
+          git commit -m "Remove third-party engagement-rate branding"
+          git push
