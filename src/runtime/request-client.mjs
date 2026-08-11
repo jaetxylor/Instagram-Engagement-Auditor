@@ -81,17 +81,29 @@ export class AdaptiveRequestClient {
   async wait(ms, signal) {
     if (signal?.aborted) throw signal.reason ?? abortError();
     if (ms <= 0) return;
+    if (!signal) {
+      await this.sleep(ms);
+      return;
+    }
 
-    await Promise.race([
-      this.sleep(ms),
-      new Promise((_, reject) => {
-        if (!signal) return;
-        const onAbort = () => reject(signal.reason ?? abortError());
-        signal.addEventListener("abort", onAbort, { once: true });
-      })
-    ]);
+    await new Promise((resolve, reject) => {
+      let settled = false;
+      const cleanup = () => signal.removeEventListener("abort", onAbort);
+      const finish = fn => value => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        fn(value);
+      };
+      const onResolve = finish(resolve);
+      const onReject = finish(reject);
+      const onAbort = () => onReject(signal.reason ?? abortError());
 
-    if (signal?.aborted) throw signal.reason ?? abortError();
+      signal.addEventListener("abort", onAbort, { once: true });
+      Promise.resolve(this.sleep(ms)).then(onResolve, onReject);
+    });
+
+    if (signal.aborted) throw signal.reason ?? abortError();
   }
 
   async pace(signal) {
