@@ -71,6 +71,9 @@ export function createAuditRun({
       likes: [],
       comments: []
     },
+    enrichments: {
+      profileCounts: []
+    },
     coverage: null,
     metrics: null,
     classifications: [],
@@ -104,6 +107,7 @@ export function validateAuditRun(run) {
   if (!Array.isArray(run.posts)) errors.push("posts must be an array.");
   if (!Array.isArray(run?.observations?.likes)) errors.push("observations.likes must be an array.");
   if (!Array.isArray(run?.observations?.comments)) errors.push("observations.comments must be an array.");
+  if (run.enrichments != null && !Array.isArray(run?.enrichments?.profileCounts)) errors.push("enrichments.profileCounts must be an array when enrichments is present.");
   if (!Array.isArray(run.classifications)) errors.push("classifications must be an array.");
 
   return { valid: errors.length === 0, errors };
