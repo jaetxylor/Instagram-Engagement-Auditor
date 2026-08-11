@@ -1,5 +1,5 @@
 import { createBrowserAuditRuntime } from "./runtime.mjs";
-import { createBrowserAuditorApp } from "../ui/browser-app.mjs";
+import { createBrowserAuditorAppV4 } from "../ui/browser-app-v4.mjs";
 
 export function launchBrowserAuditor({
   runtime = null,
@@ -26,9 +26,10 @@ export function launchBrowserAuditor({
     ...runtimeOptions
   });
 
-  const app = createBrowserAuditorApp({
+  const app = createBrowserAuditorAppV4({
     runtime: resolvedRuntime,
     documentRef,
+    windowRef,
     mountTarget
   });
 
