@@ -1,0 +1,26 @@
+{
+  "items": [
+    {
+      "pk": "9001",
+      "id": "9001_1",
+      "code": "FixturePost",
+      "taken_at": 1786406400,
+      "like_count": 123,
+      "comment_count": 17,
+      "comments_disabled": false,
+      "like_and_view_counts_disabled": false
+    },
+    {
+      "pk": "9002",
+      "id": "9002_1",
+      "code": "HiddenLikes",
+      "taken_at": 1786320000,
+      "like_count": 999,
+      "comment_count": 0,
+      "comments_disabled": true,
+      "like_and_view_counts_disabled": true
+    }
+  ],
+  "more_available": true,
+  "next_max_id": "posts-cursor-2"
+}
