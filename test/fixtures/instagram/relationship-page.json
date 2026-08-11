@@ -1,0 +1,23 @@
+{
+  "users": [
+    {
+      "pk": "101",
+      "username": "fixture_one",
+      "full_name": "Fixture One",
+      "is_private": false,
+      "is_verified": false,
+      "profile_pic_url": "https://example.invalid/one.jpg",
+      "follower_count": 250,
+      "following_count": 125
+    },
+    {
+      "pk": "102",
+      "username": "fixture_two",
+      "full_name": "Fixture Two",
+      "is_private": true,
+      "is_verified": true,
+      "profile_pic_url": "https://example.invalid/two.jpg"
+    }
+  ],
+  "next_max_id": "cursor-2"
+}
