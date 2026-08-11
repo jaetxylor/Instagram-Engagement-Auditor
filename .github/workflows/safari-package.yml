@@ -1,0 +1,108 @@
+name: Safari Package Check
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/safari-package.yml"
+      - "apps/web-extension/**"
+      - "src/**"
+      - "scripts/**"
+      - "package.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package-safari-ios:
+    runs-on: macos-26
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build and verify WebExtension
+        run: |
+          npm run check
+          npm test
+          npm run build:extension
+          npm run verify:extension
+
+      - name: Show Apple toolchain
+        run: |
+          sw_vers
+          xcodebuild -version
+          xcrun safari-web-extension-packager --help | head -80
+
+      - name: Package Safari iOS extension
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcrun safari-web-extension-packager \
+            --ios-only \
+            --swift \
+            --copy-resources \
+            --no-open \
+            --no-prompt \
+            --force \
+            --app-name "Engagement Auditor" \
+            --bundle-identifier "com.jaetxylor.engagementauditor.dev" \
+            --project-location "$PWD/build/safari" \
+            "$PWD/dist/web-extension" 2>&1 | tee build/safari-packager.log
+
+      - name: Normalize generated Safari identifiers
+        run: |
+          PBXPROJ="$(find build/safari -name project.pbxproj -print -quit)"
+          if [ -z "$PBXPROJ" ]; then
+            echo "Generated project.pbxproj was not found." >&2
+            exit 1
+          fi
+          node scripts/fix-safari-project.mjs "$PBXPROJ" com.jaetxylor.engagementauditor.dev
+          echo "--- Product bundle identifiers after normalization ---"
+          grep -n 'PRODUCT_BUNDLE_IDENTIFIER' "$PBXPROJ"
+
+      - name: Verify generated Xcode project
+        run: |
+          PROJECT="$(find build/safari -name '*.xcodeproj' -print -quit)"
+          if [ -z "$PROJECT" ]; then
+            echo "Safari packager did not create an Xcode project." >&2
+            exit 1
+          fi
+          echo "Generated project: $PROJECT"
+          xcodebuild -project "$PROJECT" -list
+
+      - name: Inspect generated extension embedding
+        run: |
+          PBXPROJ="$(find build/safari -name project.pbxproj -print -quit)"
+          echo "PBX project: $PBXPROJ"
+          echo "--- Safari extension product/embed references ---"
+          grep -n -C 5 -E 'PBXCopyFilesBuildPhase|Engagement Auditor Extension\.appex|dstSubfolderSpec = 13|PlugIns' "$PBXPROJ" || true
+
+      - name: Compile unsigned iOS Simulator build
+        run: |
+          set -o pipefail
+          PROJECT="$(find build/safari -name '*.xcodeproj' -print -quit)"
+          xcodebuild \
+            -project "$PROJECT" \
+            -scheme "Engagement Auditor" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee build/ios-simulator-build.log
+
+      - name: Upload unsigned Safari packaging artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: engagement-auditor-safari-ios-unsigned-pr
+          path: |
+            build/safari/
+            build/safari-packager.log
+            build/ios-simulator-build.log
+          if-no-files-found: warn
+          retention-days: 14

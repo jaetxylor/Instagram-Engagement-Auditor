@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Engagement Auditor</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="panel">
+    <header class="brand">
+      <div class="mark" aria-hidden="true">EA</div>
+      <div>
+        <strong>Engagement Auditor</strong>
+        <span>V4 mobile client</span>
+      </div>
+    </header>
+
+    <section class="status-card" id="status-card" aria-live="polite">
+      <span class="status-dot" id="status-dot"></span>
+      <div>
+        <strong id="status-title">Checking Instagram…</strong>
+        <p id="status-copy">Make sure Instagram is open and you are logged in.</p>
+      </div>
+    </section>
+
+    <button class="primary" id="launch" type="button" disabled>
+      <span>Run Engagement Audit</span>
+      <small>Opens the V4 auditor on this Instagram tab</small>
+    </button>
+
+    <button class="secondary" id="close" type="button" hidden>
+      Close auditor
+    </button>
+
+    <button class="secondary" id="open-instagram" type="button" hidden>
+      Open Instagram
+    </button>
+
+    <details>
+      <summary>Privacy & safety</summary>
+      <p>The extension is read-only. Audit processing stays in your browser session and does not automate follows, unfollows, likes, comments, or DMs.</p>
+    </details>
+
+    <footer>
+      <span>Created by @jaetxylor</span>
+      <span>Independent · not affiliated with Meta</span>
+    </footer>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

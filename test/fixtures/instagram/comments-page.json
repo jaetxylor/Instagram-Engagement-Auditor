@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "pk": "c1",
+      "text": "Root comment",
+      "created_at": 1786406500,
+      "user": {
+        "pk": "201",
+        "username": "commenter_one",
+        "full_name": "Commenter One"
+      },
+      "preview_child_comments": [
+        {
+          "pk": "c1r1",
+          "text": "Reply comment",
+          "created_at": 1786406600,
+          "user": {
+            "pk": "202",
+            "username": "commenter_two",
+            "full_name": "Commenter Two"
+          }
+        }
+      ]
+    }
+  ],
+  "next_min_id": null
+}
