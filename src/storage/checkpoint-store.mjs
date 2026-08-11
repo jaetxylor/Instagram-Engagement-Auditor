@@ -115,26 +115,27 @@ export class IndexedDbCheckpointStore {
 
     const db = await this.open();
     const tx = db.transaction(this.storeName, "readwrite");
+    const done = transactionPromise(tx);
     tx.objectStore(this.storeName).put(clone(run));
-    await transactionPromise(tx);
+    await done;
     return clone(run);
   }
 
   async get(id) {
     const db = await this.open();
     const tx = db.transaction(this.storeName, "readonly");
+    const done = transactionPromise(tx);
     const result = await requestPromise(tx.objectStore(this.storeName).get(String(id)));
-    await transactionPromise(tx);
+    await done;
     return result ? clone(result) : null;
   }
 
   async list({ limit = 20 } = {}) {
     const db = await this.open();
     const tx = db.transaction(this.storeName, "readonly");
-    const store = tx.objectStore(this.storeName);
-    const request = store.getAll();
-    const rows = await requestPromise(request);
-    await transactionPromise(tx);
+    const done = transactionPromise(tx);
+    const rows = await requestPromise(tx.objectStore(this.storeName).getAll());
+    await done;
 
     return rows
       .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
@@ -157,16 +158,18 @@ export class IndexedDbCheckpointStore {
   async delete(id) {
     const db = await this.open();
     const tx = db.transaction(this.storeName, "readwrite");
+    const done = transactionPromise(tx);
     tx.objectStore(this.storeName).delete(String(id));
-    await transactionPromise(tx);
+    await done;
     return true;
   }
 
   async clear() {
     const db = await this.open();
     const tx = db.transaction(this.storeName, "readwrite");
+    const done = transactionPromise(tx);
     tx.objectStore(this.storeName).clear();
-    await transactionPromise(tx);
+    await done;
   }
 
   async close() {
@@ -177,7 +180,7 @@ export class IndexedDbCheckpointStore {
 }
 
 export function createCheckpointStore(options = {}) {
-  if (options.memory || !options.indexedDB && !globalThis.indexedDB) {
+  if (options.memory || (!options.indexedDB && !globalThis.indexedDB)) {
     return new MemoryCheckpointStore();
   }
   return new IndexedDbCheckpointStore(options);
