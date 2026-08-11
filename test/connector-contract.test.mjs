@@ -7,7 +7,13 @@ test("connector advertises supported capabilities", () => {
     id: "browser-instagram",
     version: "4.0.0",
     sourceType: "browser",
-    capabilities: ["account", "followers", "following", "posts"]
+    capabilities: ["account", "followers", "following", "posts"],
+    methods: {
+      async getAccountContext() { return { id: "1" }; },
+      async listFollowers() { return []; },
+      async listFollowing() { return []; },
+      async listPosts() { return []; }
+    }
   });
 
   assert.equal(connector.supports("followers"), true);
@@ -24,12 +30,25 @@ test("unknown capabilities are rejected", () => {
   }), /Unknown connector capability/);
 });
 
-test("missing required capability produces an explicit error", () => {
+test("advertised capabilities require their implementation methods", () => {
+  assert.throws(() => defineConnector({
+    id: "broken",
+    version: "1",
+    sourceType: "browser",
+    capabilities: ["posts"],
+    methods: {}
+  }), /requires methods\.listPosts/);
+});
+
+test("missing capability produces an explicit runtime error", () => {
   const connector = defineConnector({
     id: "import",
     version: "1",
     sourceType: "import",
-    capabilities: ["posts"]
+    capabilities: ["posts"],
+    methods: {
+      async listPosts() { return []; }
+    }
   });
 
   assert.throws(() => requireCapability(connector, "followers"), /does not support capability/);
