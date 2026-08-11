@@ -6,7 +6,7 @@
 
 > **Live copy page:** https://jaetxylor.github.io/Instagram-Engagement-Auditor/
 
-A read-only browser-based Instagram audit tool for analyzing follower relationships, post engagement, inactivity confidence, engagement-rate estimates, and follower/following ratios.
+A read-only browser-based Instagram audit tool for analyzing follower relationships, post engagement, inactivity confidence, profile engagement-rate estimates, and follower/following ratios.
 
 Created by [@jaetxylor](https://github.com/jaetxylor).
 
@@ -18,7 +18,7 @@ Created by [@jaetxylor](https://github.com/jaetxylor).
 - Cross-check post engagement against your followers
 - Separate accounts into high-confidence inactive, likely inactive, uncertain, low observed engagement, and active groups
 - Measure identity-response coverage so incomplete Instagram responses are not treated as proof of inactivity
-- Calculate a HypeAuditor-style profile engagement-rate estimate using recent post likes/comments and follower count
+- Calculate a profile engagement-rate estimate from recent post likes/comments and follower count
 - Optional follower/following profile-ratio analysis
 - Find followed accounts whose **following count is higher than their follower count**
 - Export audit data to CSV and JSON
@@ -38,7 +38,7 @@ Use **Chrome or Edge on desktop** for the easiest Snippets workflow.
 
 After Developer Tools opens, select **Sources → Snippets**. If the left sidebar is hidden, click the `>>` overflow menu in DevTools and choose **Sources**.
 
-> **Safari users:** the instructions are different and Safari does not provide the same Chrome/Edge Snippets workflow. For this tool, Chrome or Edge on macOS is recommended.
+> **Safari users:** Safari does not provide the same Chrome/Edge Snippets workflow. Chrome or Edge on macOS is recommended for this tool.
 
 ### Option A — Copy from the project page
 
@@ -94,19 +94,17 @@ Depending on the interaction identity coverage returned by Instagram, followers 
 
 The tool also displays per-post coverage diagnostics comparing the visible interaction totals with the liker/commenter identities Instagram actually returned.
 
-## Engagement-rate estimate
+## Profile engagement rate
 
-The profile analytics section includes a **HypeAuditor-style ER estimate**.
-
-The implementation is intentionally transparent:
+The profile analytics section includes a transparent engagement-rate estimate.
 
 ```text
 ER per post = (likes + comments) / followers × 100
 ```
 
-It uses up to the 12 most recent usable posts, removes statistical outliers with the standard 1.5×IQR rule, and reports the median of the remaining per-post ER values.
+The auditor uses up to the 12 most recent usable posts, removes statistical outliers with the standard **1.5×IQR** rule, and reports the median of the remaining per-post engagement rates.
 
-This is an independent estimate inspired by the publicly described methodology. It is **not** an official HypeAuditor score and does not reproduce any proprietary scoring algorithm.
+It also reports average likes, average comments, an all-scanned-post engagement-rate estimate, and the number of statistical outliers removed.
 
 ## Follow-ratio analysis
 
