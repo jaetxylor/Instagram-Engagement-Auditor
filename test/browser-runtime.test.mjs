@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createBrowserAuditRuntime } from "../src/browser/runtime.mjs";
 import { createAuditRun, updateAuditProgress } from "../src/core/audit-schema.mjs";
 import { defineConnector } from "../src/connectors/contract.mjs";
+import { enrichProfileCounts } from "../src/product/profile-enrichment.mjs";
 import { MemoryCheckpointStore } from "../src/storage/checkpoint-store.mjs";
 
 function accountConnector() {
@@ -14,6 +15,24 @@ function accountConnector() {
     methods: {
       async getAccountContext() {
         return { id: "acct", username: "owner" };
+      }
+    }
+  });
+}
+
+function profileConnector() {
+  return defineConnector({
+    id: "profile-count-test",
+    version: "1",
+    sourceType: "browser",
+    capabilities: ["account", "profile_counts"],
+    methods: {
+      async getAccountContext() {
+        return { id: "acct", username: "owner" };
+      },
+      async getProfileCounts({ id }) {
+        if (String(id) === "remote") return { followers: 120, following: 240 };
+        throw new Error(`Unexpected profile lookup: ${id}`);
       }
     }
   });
@@ -76,4 +95,49 @@ test("browser runtime can discard a saved run without clearing all history", asy
 
   await runtime.clearLocalHistory();
   assert.equal((await store.list()).length, 0);
+});
+
+test("completed ratio enrichment is immediately checkpointed into the active audit", async () => {
+  const store = new MemoryCheckpointStore();
+  const runtime = createBrowserAuditRuntime({
+    connector: profileConnector(),
+    checkpointStore: store
+  });
+
+  const run = await runtime.runAudit({ resume: false });
+  assert.equal(run.status, "complete");
+  assert.deepEqual(run.enrichments.profileCounts, []);
+
+  const result = await enrichProfileCounts({
+    connector: runtime.connector,
+    accounts: [
+      { id: "embedded", username: "embedded_user", followerCount: 90, followingCount: 45 },
+      { id: "remote", username: "remote_user" }
+    ]
+  });
+
+  assert.equal(result.summary.available, 2);
+  assert.equal(result.summary.embedded, 1);
+
+  const activeById = new Map(run.enrichments.profileCounts.map(record => [record.id, record]));
+  assert.deepEqual(activeById.get("embedded"), {
+    id: "embedded",
+    username: "embedded_user",
+    followers: 90,
+    following: 45,
+    fetchedAt: null,
+    source: "relationship_payload"
+  });
+  assert.deepEqual(activeById.get("remote"), {
+    id: "remote",
+    username: "remote_user",
+    followers: 120,
+    following: 240,
+    fetchedAt: null,
+    source: "connector"
+  });
+
+  const checkpoint = await store.get(run.id);
+  assert.deepEqual(checkpoint.enrichments.profileCounts, run.enrichments.profileCounts);
+  assert.equal(checkpoint.enrichments.profileCounts.length, 2);
 });
