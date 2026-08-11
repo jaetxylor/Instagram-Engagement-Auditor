@@ -7,7 +7,7 @@
   <title>Instagram Engagement Auditor V3</title>
   <style>
     :root{color-scheme:dark;--bg:#0b0d11;--panel:#14171d;--panel2:#0d1015;--text:#f5f7fb;--muted:#9299a6;--line:#ffffff18;--accent:#d946ef;--accent2:#833ab4;--ok:#43d275;--warn:#facc15}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(circle at 10% 0,#833ab433,transparent 32rem),radial-gradient(circle at 100% 0,#405de633,transparent 30rem),var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.shell{width:min(1040px,calc(100% - 32px));margin:0 auto;padding:56px 0}.card{border:1px solid var(--line);border-radius:18px;background:#14171de8;box-shadow:0 28px 90px #0006;overflow:hidden}.hero{padding:38px}.eyebrow{display:inline-flex;padding:5px 9px;border:1px solid #d946ef55;border-radius:999px;color:#e8b1f2;background:#d946ef12;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}h1{margin:16px 0 10px;font-size:clamp(38px,7vw,72px);line-height:.95;letter-spacing:-.045em}h2{margin:0 0 8px;font-size:24px}p{color:var(--muted);max-width:760px}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.btn{appearance:none;border:1px solid var(--line);border-radius:11px;background:#1c2028;color:#fff;padding:12px 16px;font-weight:800;text-decoration:none;cursor:pointer;transition:.15s ease}.btn.primary{border:0;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)}.btn:hover:not(:disabled){transform:translateY(-1px);border-color:#ffffff33}.btn:disabled{opacity:.55;cursor:not-allowed}.status{margin-top:12px;color:var(--muted);font-size:13px;min-height:20px}.status.ok{color:#8fe1a6}.status.err{color:#ff9a9a}.section{padding:30px 38px;border-top:1px solid var(--line)}.code-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}.code-actions{display:flex;gap:8px;flex-wrap:wrap}.codebox{position:relative;border:1px solid var(--line);border-radius:14px;background:var(--panel2);overflow:hidden}.code-meta{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);color:#7f8794;font-size:12px}.code-scroll{max-height:520px;overflow:auto}.code-scroll pre{margin:0;padding:18px;min-width:max-content}.code-scroll code{display:block;max-width:none;background:none;border:0;padding:0;color:#d9dce3;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;user-select:text}.loading{padding:28px;color:#8e96a3;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.steps ol{padding-left:22px}.steps li{margin:9px 0;color:#cdd2da}.note{margin-top:20px;padding:14px;border:1px solid #facc1533;border-radius:11px;background:#facc150d;color:#d9c878;font-size:14px}.privacy{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.mini{padding:13px;border:1px solid var(--line);border-radius:11px;background:#101319}.mini b{display:block;margin-bottom:3px}.mini span{color:#858d9a;font-size:13px}.footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 4px;color:#727b89;font-size:13px}.footer a{color:#cfa7ff}.steps a,.section a{color:#cfa7ff}@media(max-width:720px){.shell{padding:20px 0}.hero,.section{padding:24px 20px}.code-head{display:block}.code-actions{margin-top:14px}.actions{display:grid}.btn{text-align:center}.privacy{grid-template-columns:1fr}.code-scroll{max-height:420px}}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(circle at 10% 0,#833ab433,transparent 32rem),radial-gradient(circle at 100% 0,#405de633,transparent 30rem),var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.shell{width:min(1040px,calc(100% - 32px));margin:0 auto;padding:56px 0}.card{border:1px solid var(--line);border-radius:18px;background:#14171de8;box-shadow:0 28px 90px #0006;overflow:hidden}.hero{padding:38px}.eyebrow{display:inline-flex;padding:5px 9px;border:1px solid #d946ef55;border-radius:999px;color:#e8b1f2;background:#d946ef12;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}h1{margin:16px 0 10px;font-size:clamp(38px,7vw,72px);line-height:.95;letter-spacing:-.045em}h2{margin:0 0 8px;font-size:24px}h3{margin:0 0 6px;font-size:15px}p{color:var(--muted);max-width:760px}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.btn{appearance:none;border:1px solid var(--line);border-radius:11px;background:#1c2028;color:#fff;padding:12px 16px;font-weight:800;text-decoration:none;cursor:pointer;transition:.15s ease}.btn.primary{border:0;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)}.btn:hover:not(:disabled){transform:translateY(-1px);border-color:#ffffff33}.btn:disabled{opacity:.55;cursor:not-allowed}.status{margin-top:12px;color:var(--muted);font-size:13px;min-height:20px}.status.ok{color:#8fe1a6}.status.err{color:#ff9a9a}.section{padding:30px 38px;border-top:1px solid var(--line)}.code-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}.code-actions{display:flex;gap:8px;flex-wrap:wrap}.codebox{position:relative;border:1px solid var(--line);border-radius:14px;background:var(--panel2);overflow:hidden}.code-meta{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);color:#7f8794;font-size:12px}.code-scroll{max-height:520px;overflow:auto}.code-scroll pre{margin:0;padding:18px;min-width:max-content}.code-scroll code{display:block;max-width:none;background:none;border:0;padding:0;color:#d9dce3;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;user-select:text}.loading{padding:28px;color:#8e96a3;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.steps ol{padding-left:22px}.steps li{margin:9px 0;color:#cdd2da}.shortcut-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0}.shortcut{padding:16px;border:1px solid var(--line);border-radius:12px;background:#101319}.shortcut strong{display:block;margin-bottom:8px}.keys{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.key{display:inline-flex;align-items:center;justify-content:center;min-height:31px;padding:4px 9px;border:1px solid #ffffff24;border-bottom-color:#ffffff3d;border-radius:7px;background:#090c10;color:#fff;font:700 13px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-shadow:0 2px 0 #000}.or{color:#737c89;font-size:12px}.shortcut small{display:block;margin-top:9px;color:#858d9a}.note{margin-top:20px;padding:14px;border:1px solid #facc1533;border-radius:11px;background:#facc150d;color:#d9c878;font-size:14px}.privacy{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.mini{padding:13px;border:1px solid var(--line);border-radius:11px;background:#101319}.mini b{display:block;margin-bottom:3px}.mini span{color:#858d9a;font-size:13px}.footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 4px;color:#727b89;font-size:13px}.footer a{color:#cfa7ff}.steps a,.section a{color:#cfa7ff}@media(max-width:720px){.shell{padding:20px 0}.hero,.section{padding:24px 20px}.code-head{display:block}.code-actions{margin-top:14px}.actions{display:grid}.btn{text-align:center}.privacy,.shortcut-grid{grid-template-columns:1fr}.code-scroll{max-height:420px}}
   </style>
 </head>
 <body>
@@ -52,15 +52,39 @@
 
       <div class="section steps">
         <h2>How to use</h2>
+        <p>Use <strong>Chrome or Edge on desktop</strong>. First copy the auditor code above, then open Instagram and use the shortcut for your computer:</p>
+
+        <div class="shortcut-grid">
+          <div class="shortcut">
+            <strong>Windows</strong>
+            <div class="keys">
+              <span class="key">Ctrl</span><span>+</span><span class="key">Shift</span><span>+</span><span class="key">I</span>
+              <span class="or">or</span>
+              <span class="key">F12</span>
+            </div>
+            <small>Opens Developer Tools in Chrome or Edge.</small>
+          </div>
+          <div class="shortcut">
+            <strong>macOS / Mac</strong>
+            <div class="keys">
+              <span class="key">⌘ Command</span><span>+</span><span class="key">⌥ Option</span><span>+</span><span class="key">I</span>
+            </div>
+            <small>Opens Developer Tools in Chrome or Edge on a Mac.</small>
+          </div>
+        </div>
+
         <ol>
           <li>Click <strong>Copy code</strong> above.</li>
           <li>Open <a href="https://www.instagram.com/">instagram.com</a> on desktop and sign in.</li>
-          <li>Open Developer Tools.</li>
-          <li>Go to <strong>Sources → Snippets</strong>.</li>
-          <li>Create a new snippet and paste the copied JavaScript.</li>
-          <li>Run the snippet.</li>
-          <li>Review the scan settings, then start the read-only audit.</li>
+          <li>Press the <strong>Windows</strong> or <strong>Mac</strong> Developer Tools shortcut shown above.</li>
+          <li>In DevTools, open <strong>Sources → Snippets</strong>. If Sources is hidden, use the <strong>&gt;&gt;</strong> overflow menu.</li>
+          <li>Click <strong>+ New snippet</strong>.</li>
+          <li>Paste the copied JavaScript into the snippet.</li>
+          <li>Click the <strong>▶ Run</strong> button.</li>
+          <li>The auditor will open over Instagram. Review the settings, then start the read-only scan.</li>
         </ol>
+
+        <div class="note"><strong>Mac users:</strong> these instructions refer to Chrome or Edge on macOS. Safari's Web Inspector works differently and does not use the same Chrome/Edge Snippets workflow.</div>
 
         <div class="privacy">
           <div class="mini"><b>Read-only</b><span>No follow, unfollow, like, comment, or DM actions.</span></div>
