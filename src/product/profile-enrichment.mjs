@@ -1,4 +1,5 @@
 import { calculateFollowRatio } from "../core/engagement.mjs";
+import { patchAuditRun } from "../core/audit-schema.mjs";
 
 function idOf(account) {
   return String(account?.id ?? account?.pk ?? account?.userId ?? "");
@@ -38,6 +39,29 @@ export function decorateProfileCounts(account, counts, { source = "unknown", fet
       following: normalized.following
     })
   };
+}
+
+export function applyProfileEnrichmentToRun(run, enrichmentResult) {
+  const existing = new Map((run?.enrichments?.profileCounts ?? []).map(record => [String(record?.id ?? ""), record]).filter(([id]) => id));
+  for (const result of enrichmentResult?.results ?? []) {
+    const id = idOf(result);
+    const counts = result?.profileCounts;
+    if (!id || !counts || !Number.isFinite(counts.followers) || !Number.isFinite(counts.following)) continue;
+    existing.set(id, {
+      id,
+      username: result?.username ?? "",
+      followers: counts.followers,
+      following: counts.following,
+      fetchedAt: counts.fetchedAt ?? null,
+      source: counts.source ?? "unknown"
+    });
+  }
+  return patchAuditRun(run, {
+    enrichments: {
+      ...(run?.enrichments ?? {}),
+      profileCounts: [...existing.values()]
+    }
+  });
 }
 
 export async function enrichProfileCounts({
