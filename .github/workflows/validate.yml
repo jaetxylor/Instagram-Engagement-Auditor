@@ -20,5 +20,14 @@ jobs:
         with:
           node-version: 22
 
-      - name: Validate syntax and tests
+      - name: Validate syntax, tests and bundle
         run: npm run validate
+
+      - name: Upload V4 smoke-test bundle
+        if: success() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: instagram-engagement-auditor-v4-pr
+          path: dist/instagram-engagement-auditor-v4.js
+          if-no-files-found: error
+          retention-days: 14
