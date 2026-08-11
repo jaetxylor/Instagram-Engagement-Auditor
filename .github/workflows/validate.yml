@@ -6,7 +6,7 @@ on:
   pull_request:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   syntax:
@@ -20,45 +20,5 @@ jobs:
         with:
           node-version: 22
 
-      - name: Normalize profile engagement-rate wording
-        if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          p = Path('instagram-engagement-auditor.js')
-          s = p.read_text(encoding='utf-8')
-
-          replacements = {
-              'hype: median(f.kept),': 'profileER: median(f.kept),',
-              '$("#hype").textContent=Number.isFinite(m?.hype)?pct(m.hype,2):"—";': '$("#profileER").textContent=Number.isFinite(m?.profileER)?pct(m.profileER,2):"—";',
-              '<span>HypeAuditor-style ER</span><strong id="hype">—</strong>': '<span>Profile engagement rate</span><strong id="profileER">—</strong>',
-              'ER per post = (likes + comments) ÷ followers × 100. Uses up to 12 recent usable posts, transparent 1.5×IQR outlier removal, then the median. This is an independent HypeAuditor-style estimate, not an official HypeAuditor score.': 'ER per post = (likes + comments) ÷ followers × 100. Uses up to 12 recent usable posts, transparent 1.5×IQR outlier removal, then reports the median.',
-              'HypeAuditor-style estimate: per-post (likes+comments)/followers*100; up to 12 recent posts; transparent 1.5xIQR outlier filter; median of remaining values.': 'Profile engagement-rate estimate: per-post (likes+comments)/followers*100; up to 12 recent posts; transparent 1.5xIQR outlier filter; median of remaining values.'
-          }
-
-          for old, new in replacements.items():
-              s = s.replace(old, new)
-
-          if 'hypeauditor' in s.lower() or '#hype' in s or 'm?.hype' in s or 'hype:' in s:
-              raise SystemExit('Legacy engagement-rate branding/identifier still exists in auditor source')
-
-          p.write_text(s, encoding='utf-8')
-          PY
-
       - name: Check JavaScript syntax
         run: node --check instagram-engagement-auditor.js
-
-      - name: Commit normalized auditor source
-        if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
-        shell: bash
-        run: |
-          if git diff --quiet -- instagram-engagement-auditor.js; then
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add instagram-engagement-auditor.js
-          git commit -m "Remove third-party engagement-rate branding"
-          git push
