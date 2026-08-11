@@ -1,3 +1,5 @@
+import { calculateFollowRatio } from "../core/engagement.mjs";
+
 function idOf(value) {
   return String(value?.id ?? value?.pk ?? value?.userId ?? "");
 }
@@ -63,6 +65,7 @@ export function buildAuditOverview(run) {
   const warnings = safeArray(run?.diagnostics?.warnings);
   const errors = safeArray(run?.diagnostics?.errors);
   const progress = run?.progress ?? {};
+  const profileCounts = safeArray(run?.enrichments?.profileCounts);
 
   return {
     auditId: run?.id ?? null,
@@ -87,6 +90,10 @@ export function buildAuditOverview(run) {
       outliersRemoved: Number(run?.metrics?.outliersRemoved ?? 0)
     },
     classifications: classificationCounts,
+    enrichments: {
+      profileCountsAvailable: profileCounts.length,
+      moreFollowingThanFollowers: profileCounts.filter(record => Number(record?.following) > Number(record?.followers)).length
+    },
     auditQuality: {
       identityCoveragePercent: round(run?.coverage?.overallPercent, 1),
       confidenceLevel: run?.coverage?.confidence?.level ?? "low",
@@ -132,11 +139,31 @@ function baseRow(user = {}) {
   };
 }
 
+function withEnrichment(row, enrichment) {
+  if (!enrichment) return row;
+  const followers = finiteOrNull(enrichment.followers);
+  const following = finiteOrNull(enrichment.following);
+  if (followers == null || following == null) return row;
+  return {
+    ...row,
+    followerCount: followers,
+    followingCount: following,
+    profileCounts: {
+      followers,
+      following,
+      fetchedAt: enrichment.fetchedAt ?? null,
+      source: enrichment.source ?? "unknown"
+    },
+    followRatio: calculateFollowRatio({ followers, following })
+  };
+}
+
 export function buildAccountRows(run) {
   const followers = safeArray(run?.relationships?.followers);
   const following = safeArray(run?.relationships?.following);
   const followersById = new Map(followers.map(user => [idOf(user), user]).filter(([id]) => id));
   const followingById = new Map(following.map(user => [idOf(user), user]).filter(([id]) => id));
+  const enrichmentById = new Map(safeArray(run?.enrichments?.profileCounts).map(record => [String(record?.id ?? ""), record]).filter(([id]) => id));
   const followerIds = new Set(followersById.keys());
   const followingIds = new Set(followingById.keys());
   const rows = [];
@@ -226,7 +253,7 @@ export function buildAccountRows(run) {
   }
   rows.push(...otherEngagers.values());
 
-  return rows;
+  return rows.map(row => withEnrichment(row, enrichmentById.get(String(row.id ?? ""))));
 }
 
 export function filterAccountRows(rows, {
