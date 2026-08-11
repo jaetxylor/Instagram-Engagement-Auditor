@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Instagram Engagement Auditor",
+  "short_name": "Engagement Auditor",
+  "version": "4.0.0",
+  "description": "Run a read-only Instagram engagement audit from Safari, Chrome, or Edge without opening developer tools.",
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://instagram.com/*",
+    "https://*.instagram.com/*"
+  ],
+  "action": {
+    "default_title": "Engagement Auditor",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://instagram.com/*",
+        "https://*.instagram.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}
