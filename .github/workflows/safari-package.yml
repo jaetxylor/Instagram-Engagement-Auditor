@@ -54,6 +54,17 @@ jobs:
             --project-location "$PWD/build/safari" \
             "$PWD/dist/web-extension" 2>&1 | tee build/safari-packager.log
 
+      - name: Normalize generated Safari identifiers
+        run: |
+          PBXPROJ="$(find build/safari -name project.pbxproj -print -quit)"
+          if [ -z "$PBXPROJ" ]; then
+            echo "Generated project.pbxproj was not found." >&2
+            exit 1
+          fi
+          node scripts/fix-safari-project.mjs "$PBXPROJ" com.jaetxylor.engagementauditor.dev
+          echo "--- Product bundle identifiers after normalization ---"
+          grep -n 'PRODUCT_BUNDLE_IDENTIFIER' "$PBXPROJ"
+
       - name: Verify generated Xcode project
         run: |
           PROJECT="$(find build/safari -name '*.xcodeproj' -print -quit)"
@@ -67,10 +78,6 @@ jobs:
       - name: Inspect generated extension embedding
         run: |
           PBXPROJ="$(find build/safari -name project.pbxproj -print -quit)"
-          if [ -z "$PBXPROJ" ]; then
-            echo "Generated project.pbxproj was not found." >&2
-            exit 1
-          fi
           echo "PBX project: $PBXPROJ"
           echo "--- Safari extension product/embed references ---"
           grep -n -C 5 -E 'PBXCopyFilesBuildPhase|Engagement Auditor Extension\.appex|dstSubfolderSpec = 13|PlugIns' "$PBXPROJ" || true
