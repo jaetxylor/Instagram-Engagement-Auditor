@@ -1,0 +1,12 @@
+{
+  "user": {
+    "pk": "301",
+    "username": "profile_fixture",
+    "full_name": "Profile Fixture",
+    "follower_count": 4321,
+    "following_count": 876,
+    "is_private": false,
+    "is_verified": false,
+    "profile_pic_url": "https://example.invalid/profile.jpg"
+  }
+}
