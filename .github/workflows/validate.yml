@@ -2,14 +2,14 @@ name: Validate
 
 on:
   push:
-    branches: [main]
+    branches: [main, v4-commercial-foundation]
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
-  syntax:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -19,6 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
-      - name: Check JavaScript syntax
-        run: node --check instagram-engagement-auditor.js
+      - name: Validate syntax and tests
+        run: npm run validate
