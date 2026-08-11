@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { enrichProfileCounts } from "../src/product/profile-enrichment.mjs";
+import { applyProfileEnrichmentToRun, enrichProfileCounts } from "../src/product/profile-enrichment.mjs";
+import { buildAccountRows } from "../src/product/view-model.mjs";
+import { createAuditRun } from "../src/core/audit-schema.mjs";
 import { MemoryProfileCountCache } from "../src/storage/profile-count-cache.mjs";
 
 test("profile enrichment reuses embedded counts and only fetches missing profiles", async () => {
@@ -66,4 +68,31 @@ test("profile enrichment continues after individual failures", async () => {
   assert.equal(result.summary.failed, 1);
   assert.equal(result.summary.available, 1);
   assert.equal(result.errors[0].id, "bad");
+});
+
+test("profile enrichment can be persisted into the versioned audit and rehydrated into rows", () => {
+  const run = createAuditRun({ source: { type: "browser", accountId: "owner" } });
+  run.relationships.followers = [{ id: "a", username: "ratio_user" }];
+  run.classifications = [{
+    account: { id: "a", username: "ratio_user", fullName: "" },
+    relationship: { followsYou: true, youFollow: false, mutual: false },
+    key: "active",
+    label: "Active",
+    observed: { likes: 1, comments: 0, postsEngaged: 1, totalPosts: 1, participationPercent: 100 },
+    confidence: { level: "high", percent: 99, reasons: [] }
+  }];
+
+  const enrichedRun = applyProfileEnrichmentToRun(run, {
+    results: [{
+      id: "a",
+      username: "ratio_user",
+      profileCounts: { followers: 100, following: 250, source: "fixture", fetchedAt: "2026-08-11T00:00:00.000Z" }
+    }]
+  });
+
+  assert.equal(enrichedRun.enrichments.profileCounts.length, 1);
+  const row = buildAccountRows(enrichedRun)[0];
+  assert.equal(row.profileCounts.followers, 100);
+  assert.equal(row.followRatio.followingToFollowers, 2.5);
+  assert.equal(row.followRatio.moreFollowingThanFollowers, true);
 });
