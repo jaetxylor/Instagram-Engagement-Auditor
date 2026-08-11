@@ -64,6 +64,19 @@ jobs:
           echo "Generated project: $PROJECT"
           xcodebuild -project "$PROJECT" -list
 
+      - name: Compile unsigned iOS Simulator build
+        run: |
+          set -o pipefail
+          PROJECT="$(find build/safari -name '*.xcodeproj' -print -quit)"
+          xcodebuild \
+            -project "$PROJECT" \
+            -scheme "Engagement Auditor" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee build/ios-simulator-build.log
+
       - name: Upload unsigned Safari packaging artifact
         uses: actions/upload-artifact@v4
         with:
@@ -71,5 +84,6 @@ jobs:
           path: |
             build/safari/
             build/safari-packager.log
+            build/ios-simulator-build.log
           if-no-files-found: error
           retention-days: 14
