@@ -41,6 +41,14 @@ function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value));
 }
 
+function abortError(signal) {
+  if (signal?.reason instanceof Error) return signal.reason;
+  if (typeof DOMException === "function") return new DOMException("Aborted", "AbortError");
+  const error = new Error("Aborted");
+  error.name = "AbortError";
+  return error;
+}
+
 function mergeUnique(existing, incoming, keyFn) {
   const map = new Map();
   for (const item of existing ?? []) {
@@ -173,6 +181,13 @@ export function createAuditEngine({ connector, checkpointStore = null } = {}) {
     return run;
   }
 
+  function collectorProgress(run, onProgress) {
+    return detail => {
+      if (typeof onProgress !== "function") return;
+      onProgress({ ...clone(run.progress), collector: clone(detail) }, clone(run));
+    };
+  }
+
   async function runAudit({
     configuration = {},
     resumeRun = null,
@@ -220,7 +235,11 @@ export function createAuditEngine({ connector, checkpointStore = null } = {}) {
         if (connector.supports("followers")) {
           run = updateAuditProgress(run, { phase: "followers", percent: 2, message: "Loading followers" });
           await emit(run, onProgress);
-          const followers = await connector.listFollowers({ account, signal, onProgress });
+          const followers = await connector.listFollowers({
+            account,
+            signal,
+            onProgress: collectorProgress(run, onProgress)
+          });
           run = patchAuditRun(run, {
             relationships: { ...run.relationships, followers: clone(followers ?? []) }
           });
@@ -233,7 +252,11 @@ export function createAuditEngine({ connector, checkpointStore = null } = {}) {
 
       if (!phaseAlreadyCompleted(run, "following")) {
         if (connector.supports("following")) {
-          const following = await connector.listFollowing({ account, signal, onProgress });
+          const following = await connector.listFollowing({
+            account,
+            signal,
+            onProgress: collectorProgress(run, onProgress)
+          });
           run = patchAuditRun(run, {
             relationships: { ...run.relationships, following: clone(following ?? []) }
           });
@@ -250,7 +273,7 @@ export function createAuditEngine({ connector, checkpointStore = null } = {}) {
           account,
           limit: Number(configuration.postLimit ?? run.configuration?.postLimit ?? 0),
           signal,
-          onProgress
+          onProgress: collectorProgress(run, onProgress)
         });
         run = patchAuditRun(run, { posts: clone(posts ?? []) });
         run = updateAuditProgress(run, {
@@ -264,13 +287,13 @@ export function createAuditEngine({ connector, checkpointStore = null } = {}) {
         await emit(run, onProgress);
       }
 
+      const includeLikes = configuration.likes ?? run.configuration?.likes ?? true;
+      const includeComments = configuration.comments ?? run.configuration?.comments ?? true;
+      const collectLikes = Boolean(includeLikes && connector.supports("like_identities"));
+      const collectComments = Boolean(includeComments && connector.supports("comment_identities"));
+
       if (!phaseAlreadyCompleted(run, "engagement")) {
-        const includeLikes = configuration.likes ?? run.configuration?.likes ?? true;
-        const includeComments = configuration.comments ?? run.configuration?.comments ?? true;
-        const wantsIdentityEngagement = (
-          includeLikes && connector.supports("like_identities") ||
-          includeComments && connector.supports("comment_identities")
-        );
+        const wantsIdentityEngagement = collectLikes || collectComments;
 
         if (wantsIdentityEngagement) {
           if (typeof connector.collectPostEngagement !== "function") {
@@ -284,19 +307,19 @@ export function createAuditEngine({ connector, checkpointStore = null } = {}) {
             const currentPost = run.posts[index];
             const id = postId(currentPost);
             if (!id || completedIds.has(id)) continue;
-            if (signal?.aborted) throw signal.reason ?? new DOMException("Aborted", "AbortError");
+            if (signal?.aborted) throw abortError(signal);
 
             const engagement = await connector.collectPostEngagement({
               account,
               post: clone(currentPost),
-              includeLikes,
-              includeComments,
+              includeLikes: collectLikes,
+              includeComments: collectComments,
               signal,
-              onProgress
+              onProgress: collectorProgress(run, onProgress)
             });
 
-            const likes = includeLikes ? normalizeLikeObservations(currentPost, engagement?.likes) : [];
-            const comments = includeComments ? normalizeCommentObservations(currentPost, engagement?.comments) : [];
+            const likes = collectLikes ? normalizeLikeObservations(currentPost, engagement?.likes) : [];
+            const comments = collectComments ? normalizeCommentObservations(currentPost, engagement?.comments) : [];
             const updatedPost = {
               ...currentPost,
               ...(engagement?.post ?? {}),
@@ -342,11 +365,15 @@ export function createAuditEngine({ connector, checkpointStore = null } = {}) {
         await emit(run, onProgress);
       }
 
+      const requestedModalities = [];
+      if (includeLikes) requestedModalities.push("likes");
+      if (includeComments) requestedModalities.push("comments");
       const enabledModalities = [];
-      if ((configuration.likes ?? run.configuration?.likes ?? true) && connector.supports("like_identities")) enabledModalities.push("likes");
-      if ((configuration.comments ?? run.configuration?.comments ?? true) && connector.supports("comment_identities")) enabledModalities.push("comments");
+      if (collectLikes) enabledModalities.push("likes");
+      if (collectComments) enabledModalities.push("comments");
+      const missingModalities = requestedModalities.filter(modality => !enabledModalities.includes(modality));
 
-      const coverage = enabledModalities.length
+      let coverage = enabledModalities.length
         ? summarizeAuditCoverage(run.posts, { enabledModalities })
         : {
             overallPercent: null,
@@ -357,6 +384,21 @@ export function createAuditEngine({ connector, checkpointStore = null } = {}) {
             },
             diagnostics: []
           };
+
+      if (missingModalities.length) {
+        coverage = {
+          ...coverage,
+          missingModalities,
+          confidence: {
+            level: "low",
+            percent: Number.isFinite(coverage.overallPercent) ? coverage.overallPercent : null,
+            reasons: [
+              ...(coverage.confidence?.reasons ?? []),
+              `Requested identity modality unavailable from this connector: ${missingModalities.join(", ")}.`
+            ]
+          }
+        };
+      }
 
       const followerCount = Number.isFinite(Number(account.followerCount))
         ? Number(account.followerCount)
