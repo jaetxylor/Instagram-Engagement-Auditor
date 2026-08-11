@@ -28,12 +28,20 @@ export function accountRowsToCsv(rows = []) {
     "participation_percent",
     "weighted_score",
     "confidence_level",
-    "confidence_percent"
+    "confidence_percent",
+    "profile_followers",
+    "profile_following",
+    "following_to_followers_ratio",
+    "following_minus_followers",
+    "more_following_than_followers",
+    "profile_count_source"
   ];
 
   const lines = Array.from(rows ?? []).map(row => {
     const observed = row?.observed ?? {};
     const confidence = row?.confidence ?? {};
+    const counts = row?.profileCounts ?? {};
+    const ratio = row?.followRatio ?? {};
     const values = [
       row?.id ?? "",
       row?.username ?? "",
@@ -51,7 +59,13 @@ export function accountRowsToCsv(rows = []) {
       Number.isFinite(observed.participationPercent) ? observed.participationPercent : "",
       Number.isFinite(observed.weightedScore) ? observed.weightedScore : "",
       confidence?.level ?? "",
-      Number.isFinite(confidence?.percent) ? confidence.percent : ""
+      Number.isFinite(confidence?.percent) ? confidence.percent : "",
+      Number.isFinite(counts.followers) ? counts.followers : Number.isFinite(row?.followerCount) ? row.followerCount : "",
+      Number.isFinite(counts.following) ? counts.following : Number.isFinite(row?.followingCount) ? row.followingCount : "",
+      ratio.followingToFollowers === Infinity ? "Infinity" : Number.isFinite(ratio.followingToFollowers) ? ratio.followingToFollowers : "",
+      Number.isFinite(ratio.followingMinusFollowers) ? ratio.followingMinusFollowers : "",
+      typeof ratio.moreFollowingThanFollowers === "boolean" ? ratio.moreFollowingThanFollowers : "",
+      counts.source ?? ""
     ];
     return values.map(csvEscape).join(",");
   });
